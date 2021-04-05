@@ -16,15 +16,16 @@ var REL_URL_PREFIX = '3d_model_template/';
  * See: https://www.soft8soft.com/docs/manual/en/programmers_guide/Integration-with-Reactjs-Vuejs.html#using_the_puzzles_editor
  */
 var LOAD_LOGIC_FILES = true;
-// import * as v3d_module from "./v3d_module.js";
 
+// import * as v3d_module from "./js";
+var sceneURL;
 function createApp() {
 
     var params = v3d.AppUtils.getPageParams();
 
     var PUZZLES_DIR = '/puzzles/';
     var logicURL = params.logic ? params.logic : '__LOGIC__visual_logic.js'.replace('__LOGIC__', REL_URL_PREFIX);
-    var sceneURL = params.load ? params.load : '__URL__scandinavian_1_project.gltf'.replace('__URL__', REL_URL_PREFIX);
+    sceneURL = params.load ? params.load : '__URL__scandinavian_1_project.gltf'.replace('__URL__', REL_URL_PREFIX);
     if (!sceneURL) {
         console.log('No scene URL specified');
         return;
@@ -33,26 +34,28 @@ function createApp() {
     // some puzzles can benefit from cache
     v3d.Cache.enabled = true;
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
 
         if (LOAD_LOGIC_FILES) {
             if (v3d.AppUtils.isXML(logicURL)) {
                 var logicURLJS = logicURL.match(/(.*)\.xml$/)[1] + '.js';
                 new v3d.PuzzlesLoader().loadEditorWithLogic(PUZZLES_DIR, logicURLJS,
-                    function() {
+                    function () {
                         var initOptions = v3d.PL ? v3d.PL.execInitPuzzles({
-                                container: CONTAINER_ID }).initOptions
-                                : { useFullscreen: true };
+                            container: CONTAINER_ID
+                        }).initOptions
+                            : { useFullscreen: true };
                         var appInstance = loadScene(sceneURL, initOptions);
                         v3d.PE.viewportUseAppInstance(appInstance);
                         resolve(appInstance);
                     }
                 );
             } else if (v3d.AppUtils.isJS(logicURL)) {
-                new v3d.PuzzlesLoader().loadLogic(logicURL, function() {
+                new v3d.PuzzlesLoader().loadLogic(logicURL, function () {
                     var initOptions = v3d.PL ? v3d.PL.execInitPuzzles({
-                            container: CONTAINER_ID }).initOptions
-                            : { useFullscreen: true };
+                        container: CONTAINER_ID
+                    }).initOptions
+                        : { useFullscreen: true };
                     resolve(loadScene(sceneURL, initOptions));
                 });
             } else {
@@ -62,7 +65,7 @@ function createApp() {
             resolve(loadScene(sceneURL, { useFullscreen: true }));
         }
 
-    }).catch(function(err) {
+    }).catch(function (err) {
         console.error(err);
     });
 }
@@ -76,9 +79,9 @@ function loadScene(sceneURL, initOptions) {
     if (initOptions.preserveDrawBuf) ctxSettings.preserveDrawingBuffer = true;
 
     var preloader = initOptions.useCustomPreloader
-            ? createCustomPreloader(initOptions.preloaderProgressCb,
+        ? createCustomPreloader(initOptions.preloaderProgressCb,
             initOptions.preloaderEndCb)
-            : new v3d.SimplePreloader({ container: CONTAINER_ID });
+        : new v3d.SimplePreloader({ container: CONTAINER_ID });
 
     if (v3d.PE) {
         puzzlesEditorPreparePreloader(preloader);
@@ -103,7 +106,7 @@ function loadScene(sceneURL, initOptions) {
     }
 
     sceneURL = initOptions.useCompAssets ? sceneURL + '.xz' : sceneURL;
-    app.loadScene(sceneURL, function() {
+    app.loadScene(sceneURL, function () {
         app.enableControls();
         app.run();
 
@@ -111,7 +114,7 @@ function loadScene(sceneURL, initOptions) {
         if (v3d.PL) v3d.PL.init(app, initOptions);
 
         runCode(app);
-    }, null, function() {
+    }, null, function () {
         console.log('Can\'t load the scene ' + sceneURL);
     });
 
@@ -124,11 +127,11 @@ function createCustomPreloader(updateCb, finishCb) {
     }
 
     CustomPreloader.prototype = Object.assign(Object.create(v3d.Preloader.prototype), {
-        onUpdate: function(percentage) {
+        onUpdate: function (percentage) {
             v3d.Preloader.prototype.onUpdate.call(this, percentage);
             if (updateCb) updateCb(percentage);
         },
-        onFinish: function() {
+        onFinish: function () {
             v3d.Preloader.prototype.onFinish.call(this);
             if (finishCb) finishCb();
         }
@@ -144,13 +147,13 @@ function puzzlesEditorPreparePreloader(preloader) {
     // backward compatibility for loading new projects within the old Puzzles Editor
     if (v3d.PE.loadingUpdateCb !== undefined && v3d.PE.loadingFinishCb !== undefined) {
         var _onUpdate = preloader.onUpdate.bind(preloader);
-        preloader.onUpdate = function(percentage) {
+        preloader.onUpdate = function (percentage) {
             _onUpdate(percentage);
             v3d.PE.loadingUpdateCb(percentage);
         }
 
         var _onFinish = preloader.onFinish.bind(preloader);
-        preloader.onFinish = function() {
+        preloader.onFinish = function () {
             _onFinish();
             v3d.PE.loadingFinishCb();
         }
@@ -165,17 +168,17 @@ function initFullScreen() {
     var container = document.getElementById(CONTAINER_ID);
 
     if (document.fullscreenEnabled ||
-            document.webkitFullscreenEnabled ||
-            document.mozFullScreenEnabled ||
-            document.msFullscreenEnabled)
+        document.webkitFullscreenEnabled ||
+        document.mozFullScreenEnabled ||
+        document.msFullscreenEnabled)
         fsButton.style.display = 'inline';
 
-    fsButton.addEventListener('click', function(event) {
+    fsButton.addEventListener('click', function (event) {
         event.stopPropagation();
         if (document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                document.msFullscreenElement) {
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement) {
             exitFullscreen();
         } else
             requestFullscreen(container);
@@ -183,9 +186,9 @@ function initFullScreen() {
 
     function changeFullscreen() {
         if (document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                document.msFullscreenElement) {
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement) {
             fsButton.classList.remove('fullscreen-open');
             fsButton.classList.add('fullscreen-close');
         } else {
@@ -224,150 +227,457 @@ function initFullScreen() {
 
 var _pGlob = {};
 
-    _pGlob.objCache = {};
-    _pGlob.fadeAnnotations = true;
-    _pGlob.objClickInfo = [];
-    _pGlob.pickedObject = '';
-    _pGlob.objHoverInfo = [];
-    _pGlob.hoveredObject = '';
-    _pGlob.objMovementInfos = {};
-    _pGlob.objDragOverCallbacks = [];
-    _pGlob.objDragOverInfoByBlock = {}
-    _pGlob.dragMoveOrigins = {};
-    _pGlob.dragScaleOrigins = {};
-    _pGlob.mediaElements = {};
-    _pGlob.loadedFiles = {};
-    _pGlob.loadedFile = '';
-    _pGlob.promiseValue = '';
-    _pGlob.animMixerCallbacks = [];
-    _pGlob.arHitPoint = new v3d.Vector3(0, 0, 0);
-    _pGlob.states = [];
-    _pGlob.percentage = 0;
-    _pGlob.animateParamUpdate = null;
-    _pGlob.openedFile = '';
-    _pGlob.xrSessionAcquired = false;
-    _pGlob.xrSessionCallbacks = [];
-    _pGlob.screenCoords = new v3d.Vector2();
-    _pGlob.gamepadIndex = 0;
+_pGlob.objCache = {};
+_pGlob.fadeAnnotations = true;
+_pGlob.objClickInfo = [];
+_pGlob.pickedObject = '';
+_pGlob.objHoverInfo = [];
+_pGlob.hoveredObject = '';
+_pGlob.objMovementInfos = {};
+_pGlob.objDragOverCallbacks = [];
+_pGlob.objDragOverInfoByBlock = {}
+_pGlob.dragMoveOrigins = {};
+_pGlob.dragScaleOrigins = {};
+_pGlob.mediaElements = {};
+_pGlob.loadedFiles = {};
+_pGlob.loadedFile = '';
+_pGlob.promiseValue = '';
+_pGlob.animMixerCallbacks = [];
+_pGlob.arHitPoint = new v3d.Vector3(0, 0, 0);
+_pGlob.states = [];
+_pGlob.percentage = 0;
+_pGlob.animateParamUpdate = null;
+_pGlob.openedFile = '';
+_pGlob.xrSessionAcquired = false;
+_pGlob.xrSessionCallbacks = [];
+_pGlob.screenCoords = new v3d.Vector2();
+_pGlob.gamepadIndex = 0;
 
-    _pGlob.AXIS_X = new v3d.Vector3(1, 0, 0);
-    _pGlob.AXIS_Y = new v3d.Vector3(0, 1, 0);
-    _pGlob.AXIS_Z = new v3d.Vector3(0, 0, 1);
-    _pGlob.MIN_DRAG_SCALE = 10e-4;
-    _pGlob.SET_OBJ_ROT_EPS = 1e-8;
+_pGlob.AXIS_X = new v3d.Vector3(1, 0, 0);
+_pGlob.AXIS_Y = new v3d.Vector3(0, 1, 0);
+_pGlob.AXIS_Z = new v3d.Vector3(0, 0, 1);
+_pGlob.MIN_DRAG_SCALE = 10e-4;
+_pGlob.SET_OBJ_ROT_EPS = 1e-8;
 
-    _pGlob.vec2Tmp = new v3d.Vector2();
-    _pGlob.vec2Tmp2 = new v3d.Vector2();
-    _pGlob.vec3Tmp = new v3d.Vector3();
-    _pGlob.vec3Tmp2 = new v3d.Vector3();
-    _pGlob.vec3Tmp3 = new v3d.Vector3();
-    _pGlob.vec3Tmp4 = new v3d.Vector3();
-    _pGlob.eulerTmp = new v3d.Euler();
-    _pGlob.eulerTmp2 = new v3d.Euler();
-    _pGlob.quatTmp = new v3d.Quaternion();
-    _pGlob.quatTmp2 = new v3d.Quaternion();
-    _pGlob.colorTmp = new v3d.Color();
-    _pGlob.mat4Tmp = new v3d.Matrix4();
-    _pGlob.planeTmp = new v3d.Plane();
-    _pGlob.raycasterTmp = new v3d.Raycaster();
-    _pGlob.intervals = {};
+_pGlob.vec2Tmp = new v3d.Vector2();
+_pGlob.vec2Tmp2 = new v3d.Vector2();
+_pGlob.vec3Tmp = new v3d.Vector3();
+_pGlob.vec3Tmp2 = new v3d.Vector3();
+_pGlob.vec3Tmp3 = new v3d.Vector3();
+_pGlob.vec3Tmp4 = new v3d.Vector3();
+_pGlob.eulerTmp = new v3d.Euler();
+_pGlob.eulerTmp2 = new v3d.Euler();
+_pGlob.quatTmp = new v3d.Quaternion();
+_pGlob.quatTmp2 = new v3d.Quaternion();
+_pGlob.colorTmp = new v3d.Color();
+_pGlob.mat4Tmp = new v3d.Matrix4();
+_pGlob.planeTmp = new v3d.Plane();
+_pGlob.raycasterTmp = new v3d.Raycaster();
+_pGlob.intervals = {};
 
-    let objsState = {};
-    let varsState = {};
+let objsState = {};
+let varsState = {};
 
-    function prepareExternalInterface(app) {
-        // register functions in the app.ExternalInterface to call them from Puzzles, e.g:
-        app.ExternalInterface.saveState = function () {
-            let objs;
-            objs = retrieveObjectNames("Scene") || [];
-            console.warn("objs ", objs);
+function prepareExternalInterface(app) {
+    // register functions in the app.ExternalInterface to call them from Puzzles, e.g:
+    app.ExternalInterface.saveState = function () {
+        let objs;
+        objs = retrieveObjectNames("Scene") || [];
+        console.warn("objs ", objs);
 
-            for (let i = 0; i < objs.length; i++) {
-                var objName = objs[i];
+        for (let i = 0; i < objs.length; i++) {
+            var objName = objs[i];
 
-                if (objName) {
-                    const obj = v3d_module.getObjectByName(objName,_pGlob, app);
-                    if (obj) {
-                        // console.warn("obj ", obj);
-                        // var objSaved = obj.clone(false);
+            if (objName) {
+                const obj = getObjectByName(objName, _pGlob, app);
+                if (obj) {
+                    // console.warn("obj ", obj);
+                    // var objSaved = obj.clone(false);
 
-                        // // NOTE: single-material objects only
-                        // if (obj.material)
-                        //     objSaved.material = obj.material.clone();
-                        //     console.warn("objSaved ", objSaved);
-                        objsState[objName] = obj;
-                    } else
-                        console.error('saveState: Wrong object name: ' + objName);
-                }
+                    // // NOTE: single-material objects only
+                    // if (obj.material)
+                    //     objSaved.material = obj.material.clone();
+                    //     console.warn("objSaved ", objSaved);
+                    objsState[objName] = obj;
+                } else
+                    console.error('saveState: Wrong object name: ' + objName);
             }
+        }
 
-            varsState[Object.keys(varsState).length + 1] = {
-                timestamp: new Date().getTime()
-            };
+        varsState[Object.keys(varsState).length + 1] = {
+            timestamp: new Date().getTime()
+        };
+        console.warn("objsState ", objsState);
 
-            //versions of save states
-            _pGlob.states.push({
-                objects: objsState,
-                versions: varsState
+        //versions of save states
+        _pGlob.states.push({
+            objects: objsState.Scene,
+            versions: varsState
+        });
+
+        const storage = [];
+        const sceneState = objsState.Scene;
+        const sceneStateChildren = sceneState.children.reduce((arr, obj)=>{
+            arr.push({
+                name: obj.name,
+                position: obj.position,
+                rotation: obj.rotation,
+                scale: obj.scale
             });
 
-            const modifiedScene = _pGlob.states[_pGlob.states.length - 1].objects.Scene.children;
-            modifiedScene.forEach(obj => {
-                const ignoreNames = "walls|floors|camera|window_group.+|window_group|sun";
+            return arr;
+        }, []);
 
-                // if(name === "window_group")
-                // let name = obj.name.toLowerCase()+".+";
-                // console.warn("name");
-                const isIgnored = new RegExp(ignoreNames).test(obj.name.toLowerCase());
+        console.warn("sceneStateChildren ", sceneStateChildren);
+        storage.push({
+            objects: {
+                uuid: sceneState.uuid,
+                children: sceneStateChildren,
+                position: sceneState.position,
+                rotation: sceneState.rotation,
+                scale: sceneState.scale
+            },
+            versions: varsState
+        })
+        console.warn("_pGlob ", _pGlob);
+        localStorage.setItem('_pGlob', JSON.stringify(storage));
+    }
+}
 
-                if (!isIgnored) {
-                    console.warn("=====================");
-                    console.warn("obj ", obj);
-                    console.warn("obj name ", obj.name);
-                    console.warn("obj position ", obj.position);
-                    console.warn("obj rotation ", obj.rotation);
-                    console.warn("=====================");
+function runCode(app) { // Application init
+    if(localStorage.getItem("_pGlob")){
+        loadModifiedSceneTemplate(app);
+    }
+    // loadAppendedModels();
+    // loadDeletedModels();
 
-                }
+}
+function loadModifiedSceneTemplate(app) {
+    console.warn("app ", app);
 
-            });
-            //TODO: Read gltf.nodes > {name}
-            // loop _pGlob.states[_pGlob.states.length - 1].objects.Scene.children
-            // ignore: {name} with "walls", "floors", "Sun", "Camera"
-            // overwrite position and scale to gltf with the same {name}
-            console.warn("_pGlob ", _pGlob);
+    //Sample of moving position
+    setObjTransform(app.scene.children[9].name, 'position', 6, 0, 0, false, _pGlob, app);
+    
+    const modifiedScene = localStorage.getItem("_pGlob");
+    console.warn("modifiedScene ", JSON.stringify(modifiedScene));
+    const sceneChildren = modifiedScene.states[modifiedScene.states.length - 1].objects.Scene.children;
+    sceneChildren.forEach(obj => {
+        const ignoreNames = "walls|floors|camera|window_group.+|window_group|sun";
+
+        // if(name === "window_group")
+        // let name = obj.name.toLowerCase()+".+";
+        // console.warn("name");
+        const isIgnored = new RegExp(ignoreNames).test(obj.name.toLowerCase());
+
+        if (!isIgnored) {
+            console.warn("=====================");
+            console.warn("obj ", obj);
+            console.warn("obj name ", obj.name);
+            console.warn("obj position ", obj.position);
+            console.warn("obj rotation ", obj.rotation);
+            console.warn("=====================");
+
+        }
+    });
+
+    //TODO: Read gltf.nodes > {name}
+    // loop _pGlob.states[_pGlob.states.length - 1].objects.Scene.children
+    // ignore: {name} with "walls", "floors", "Sun", "Camera"
+    // overwrite position and scale to gltf with the same {name}
+        
+}
+
+function loadAppendedModels() {
+    //TODO: GET Database of all appended gltf
+    // loop: append scene + set last save state's position
+    // appendScene('assets/models/chair/chair.gltf', 'assets/models/chair/chair.gltf', false, false, function () { }, function () { });
+
+    // // appendScene puzzle
+    // function appendScene(url, sceneName, loadCameras, loadLights, progCb, errorCb) {
+    //     _pGlob.percentage = 0;
+
+    //     app.appendScene(url, function (loadedScene) {
+    //         loadedScene.name = sceneName;
+    //         _pGlob.percentage = 100;
+    //         appendLoaded(sceneName);
+    //     }, function (percentage) {
+    //         _pGlob.percentage = percentage;
+    //         progCb();
+    //     }, errorCb, loadCameras, loadLights);
+    // }
+
+    // function appendLoaded(objName) {
+    //     setObjTransform(objName, 'position', 6, 0, 0, false, _pGlob, app);
+    //     setObjTransform(objName, 'rotation', 45, 0, 0, false, _pGlob, app);
+    // }
+}
+// ================ MODULE =============
+/**
+* Verge3D euler rotation to Blender/Max shortest.
+* 1) Convert from intrinsic rotation (v3d) to extrinsic XYZ (Blender/Max default
+*    order) via reversion: XYZ -> ZYX
+* 2) swizzle ZYX->YZX
+* 3) choose the shortest rotation to resemble Blender's behavior
+*/
+var eulerV3DToBlenderShortest = function () {
+
+    var eulerTmp = new v3d.Euler();
+    var eulerTmp2 = new v3d.Euler();
+    var vec3Tmp = new v3d.Vector3();
+
+    return function (euler, dest) {
+
+        var eulerBlender = eulerTmp.copy(euler).reorder('YZX');
+        var eulerBlenderAlt = eulerTmp2.copy(eulerBlender).makeAlternative();
+
+        var len = eulerBlender.toVector3(vec3Tmp).lengthSq();
+        var lenAlt = eulerBlenderAlt.toVector3(vec3Tmp).lengthSq();
+
+        dest.copy(len < lenAlt ? eulerBlender : eulerBlenderAlt);
+        return coordsTransform(dest, 'Y_UP_RIGHT', 'Z_UP_RIGHT');
+    }
+
+}();
+
+/**
+   * Transform coordinates from one space to another
+   * Can be used with Vector3 or Euler.
+   */
+function coordsTransform(coords, from, to, noSignChange) {
+
+    if (from == to)
+        return coords;
+
+    var y = coords.y, z = coords.z;
+
+    if (from == 'Z_UP_RIGHT' && to == 'Y_UP_RIGHT') {
+        coords.y = z;
+        coords.z = noSignChange ? y : -y;
+    } else if (from == 'Y_UP_RIGHT' && to == 'Z_UP_RIGHT') {
+        coords.y = noSignChange ? z : -z;
+        coords.z = y;
+    } else {
+        console.error('coordsTransform: Unsupported coordinate space');
+    }
+
+    return coords;
+}
+
+// setObjTransform puzzle
+function setObjTransform(objNames, mode, x, y, z, offset, _pGlob, app) {
+
+    objNames = retrieveObjectNames(objNames);
+    if (!objNames) return;
+
+    function setObjProp(obj, prop, val) {
+        if (!offset) {
+            obj[mode][prop] = val;
+        } else {
+            if (mode != "scale")
+                obj[mode][prop] += val;
+            else
+                obj[mode][prop] *= val;
         }
     }
 
-    function runCode(app) { // Application init
+    var inputsUsed = _pGlob.vec3Tmp.set(Number(x !== ''), Number(y !== ''),
+        Number(z !== ''));
+    var coords = _pGlob.vec3Tmp2.set(x || 0, y || 0, z || 0);
 
-        // v3d_module.loadFile(v3d_module.readJSON('./scandinavian_1_project.gltf'), function() {
-        //     console.warn("readJSON ");
-            
-        // }, _pGlob);
-        // v3d_module.load()
-        //TODO: GET Database of all appended gltf
-        // loop: append scene + set last save state's position
-        // appendScene('assets/models/chair/chair.gltf', 'assets/models/chair/chair.gltf', false, false, function () { }, function () { });
-
-        // // appendScene puzzle
-        // function appendScene(url, sceneName, loadCameras, loadLights, progCb, errorCb) {
-        //     _pGlob.percentage = 0;
-
-        //     app.appendScene(url, function (loadedScene) {
-        //         loadedScene.name = sceneName;
-        //         _pGlob.percentage = 100;
-        //         appendLoaded(sceneName);
-        //     }, function (percentage) {
-        //         _pGlob.percentage = percentage;
-        //         progCb();
-        //     }, errorCb, loadCameras, loadLights);
-        // }
-
-        // function appendLoaded(objName) {
-        //     v3d_module.setObjTransform(objName, 'position', 6, 0, 0, false, _pGlob, app);
-        //     v3d_module.setObjTransform(objName, 'rotation', 45, 0, 0, false, _pGlob, app);
-        // }
+    if (mode === 'rotation') {
+        // rotations are specified in degrees
+        coords.multiplyScalar(v3d.Math.DEG2RAD);
     }
+
+    var coordSystem = getCoordSystem(app);
+
+    coordsTransform(inputsUsed, coordSystem, 'Y_UP_RIGHT', true);
+    coordsTransform(coords, coordSystem, 'Y_UP_RIGHT', mode === 'scale');
+
+    for (var i = 0; i < objNames.length; i++) {
+
+        var objName = objNames[i];
+        if (!objName) continue;
+
+        var obj = getObjectByName(objName, _pGlob, app);
+        if (!obj) continue;
+
+        if (mode === 'rotation' && coordSystem == 'Z_UP_RIGHT') {
+            // Blender/Max coordinates
+
+            // need all the rotations for order conversions, especially if some
+            // inputs are not specified
+            var euler = eulerV3DToBlenderShortest(obj.rotation, _pGlob.eulerTmp);
+            coordsTransform(euler, coordSystem, 'Y_UP_RIGHT');
+
+            if (inputsUsed.x) euler.x = offset ? euler.x + coords.x : coords.x;
+            if (inputsUsed.y) euler.y = offset ? euler.y + coords.y : coords.y;
+            if (inputsUsed.z) euler.z = offset ? euler.z + coords.z : coords.z;
+
+            /**
+             * convert from Blender/Max default XYZ extrinsic order to v3d XYZ
+             * intrinsic with reversion (XYZ -> ZYX) and axes swizzling (ZYX -> YZX)
+             */
+            euler.order = "YZX";
+            euler.reorder(obj.rotation.order);
+            obj.rotation.copy(euler);
+
+        } else if (mode === 'rotation' && coordSystem == 'Y_UP_RIGHT') {
+            // Maya coordinates
+
+            // Use separate rotation interface to fix ambiguous rotations for Maya,
+            // might as well do the same for Blender/Max.
+
+            var rotUI = RotationInterface.initObject(obj);
+            var euler = rotUI.getUserRotation(_pGlob.eulerTmp);
+            // TODO(ivan): this probably needs some reasonable wrapping
+            if (inputsUsed.x) euler.x = offset ? euler.x + coords.x : coords.x;
+            if (inputsUsed.y) euler.y = offset ? euler.y + coords.y : coords.y;
+            if (inputsUsed.z) euler.z = offset ? euler.z + coords.z : coords.z;
+
+            rotUI.setUserRotation(euler);
+            rotUI.getActualRotation(obj.rotation);
+        } else {
+
+            if (inputsUsed.x) setObjProp(obj, "x", coords.x);
+            if (inputsUsed.y) setObjProp(obj, "y", coords.y);
+            if (inputsUsed.z) setObjProp(obj, "z", coords.z);
+
+        }
+
+        obj.updateMatrixWorld(true);
+    }
+
+}
+
+/**
+ * Retrieve coordinate system from the loaded scene
+ */
+function getCoordSystem(app) {
+    var scene = app.scene;
+
+    if (scene && "v3d" in scene.userData && "coordSystem" in scene.userData.v3d) {
+        return scene.userData.v3d.coordSystem;
+    } else {
+        // COMPAT: <2.17, consider replacing to 'Y_UP_RIGHT' for scenes with unknown origin
+        return 'Z_UP_RIGHT';
+    }
+}
+
+function retrieveObjectNames(objNames) {
+    var acc = [];
+    retrieveObjectNamesAcc(objNames, acc);
+    return acc;
+}
+
+function retrieveObjectNamesAcc(currObjNames, acc) {
+    if (typeof currObjNames == "string") {
+        acc.push(currObjNames);
+    } else if (Array.isArray(currObjNames) && currObjNames[0] == "GROUP") {
+        var newObj = getObjectNamesByGroupName(currObjNames[1]);
+        for (var i = 0; i < newObj.length; i++)
+            acc.push(newObj[i]);
+    } else if (Array.isArray(currObjNames) && currObjNames[0] == "ALL_OBJECTS") {
+        var newObj = getAllObjectNames();
+        for (var i = 0; i < newObj.length; i++)
+            acc.push(newObj[i]);
+    } else if (Array.isArray(currObjNames)) {
+        for (var i = 0; i < currObjNames.length; i++)
+            retrieveObjectNamesAcc(currObjNames[i], acc);
+    }
+}
+
+// utility function envoked by almost all V3D-specific puzzles
+// find first occurence of the object by its name
+function getObjectByName(objName, _pGlob, app) {
+    var objFound;
+    var runTime = _pGlob !== undefined;
+    objFound = runTime ? _pGlob.objCache[objName] : null;
+
+    if (objFound && objFound.name === objName)
+        return objFound;
+
+    app.scene.traverse(function (obj) {
+        if (!objFound && notIgnoredObj(obj) && (obj.name == objName)) {
+            objFound = obj;
+            if (runTime) {
+                _pGlob.objCache[objName] = objFound;
+            }
+        }
+    });
+    return objFound;
+}
+
+// utility function envoked by almost all V3D-specific puzzles
+// filter off some non-mesh types
+function notIgnoredObj(obj) {
+    return (obj.type !== "AmbientLight" && obj.name !== ""
+        && !(obj.isMesh && obj.isMaterialGeneratedMesh));
+}
+
+function getObjectNamesByGroupName(targetGroupName) {
+    var objNameList = [];
+    app.scene.traverse(function (obj) {
+        if (notIgnoredObj(obj)) {
+            var groupNames = obj.groupNames;
+            if (!groupNames)
+                return;
+            for (var i = 0; i < groupNames.length; i++) {
+                var groupName = groupNames[i];
+                if (groupName == targetGroupName) {
+                    objNameList.push(obj.name);
+                }
+            }
+        }
+    });
+    return objNameList;
+}
+
+function getAllObjectNames() {
+    var objNameList = [];
+    app.scene.traverse(function (obj) {
+        if (notIgnoredObj(obj))
+            objNameList.push(obj.name)
+    });
+    return objNameList;
+}
+
+// loadFile puzzle
+function loadFile(url, callback, _pGlob) {
+
+    var files = _pGlob.loadedFiles;
+
+    if (!url || (typeof url != 'string')) {
+        _pGlob.loadedFile = '';
+        callback();
+    } else if (url in files) {
+        _pGlob.loadedFile = files[url];
+        callback();
+    } else {
+        var loader = new v3d.FileLoader();
+        loader.load(url,
+            function (data) {
+                _pGlob.loadedFile = data;
+                callback();
+            },
+            function () { },
+            function () {
+                _pGlob.loadedFile = '';
+                callback();
+            }
+        );
+    }
+}
+
+// readJSON puzzle
+function readJSON(text) {
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error("Read JSON Puzzle: could not interpret data.");
+        return null;
+    }
+}
+
 
 export { createApp, CONTAINER_ID };
